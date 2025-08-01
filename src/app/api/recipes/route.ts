@@ -40,18 +40,18 @@ const createRecipeSchema = z.object({
   familyGroupId: z.string().optional(),
   
   // Timing
-  prepTimeMinutes: z.number().positive().optional(),
-  cookTimeMinutes: z.number().positive().optional(),
-  readyInMinutes: z.number().positive().optional(),
+  prepTimeMinutes: z.number().positive().optional().nullable(),
+  cookTimeMinutes: z.number().positive().optional().nullable(),
+  readyInMinutes: z.number().positive().optional().nullable(),
   servings: z.number().positive().default(4),
   
   // Media
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url().optional().nullable(),
   mediaUrls: z.array(z.string().url()).default([]),
   
   // Categorization
   difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']).optional(),
-  cuisine: z.string().optional(),
+  cuisine: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   dishTypes: z.array(z.string()).default([]),
   diets: z.array(z.string()).default([]),
