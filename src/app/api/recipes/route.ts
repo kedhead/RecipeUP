@@ -82,15 +82,7 @@ const createRecipeSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Require authentication
-    const authHeader = request.headers.get('authorization');
-    const currentUser = authHeader ? await verifyBearerToken(authHeader) : null;
-    
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const currentUser = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // draft, published, archived
@@ -121,10 +113,17 @@ export async function GET(request: NextRequest) {
         prepTimeMinutes: recipes.prepTimeMinutes,
         readyInMinutes: recipes.readyInMinutes,
         servings: recipes.servings,
+        healthScore: recipes.healthScore,
         difficulty: recipes.difficulty,
         cuisine: recipes.cuisine,
         tags: recipes.tags,
         dishTypes: recipes.dishTypes,
+        diets: recipes.diets,
+        isVegetarian: recipes.isVegetarian,
+        isVegan: recipes.isVegan,
+        isGlutenFree: recipes.isGlutenFree,
+        isDairyFree: recipes.isDairyFree,
+        sourceType: recipes.sourceType,
         visibility: recipes.visibility,
         status: recipes.status,
         createdAt: recipes.createdAt,

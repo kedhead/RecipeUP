@@ -98,6 +98,7 @@ export function CreateRecipeClient({ user }: { user: any }) {
       const recipeData = {
         title,
         description,
+        summary: description, // Use description as summary for now
         imageUrl: imageUrl || null,
         servings,
         prepTimeMinutes: parseInt(prepTimeMinutes) || null,
@@ -112,7 +113,10 @@ export function CreateRecipeClient({ user }: { user: any }) {
         ingredients: ingredients.filter(ing => ing.name.trim()),
         instructions: instructions.filter(inst => inst.instruction.trim()),
         tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        dishTypes: [], // Could be enhanced later
+        diets: [], // Could be enhanced later
         visibility: 'public',
+        status: 'published',
       };
       
       const response = await fetch('/api/recipes', {
