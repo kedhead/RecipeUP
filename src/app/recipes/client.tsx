@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/layouts/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import Link from 'next/link';
 
 interface Recipe {
   id: string;
@@ -109,9 +110,11 @@ function RecipeCard({ recipe, onFavorite }: { recipe: Recipe; onFavorite: (id: s
           <p className="text-xs text-gray-500 mb-2">🍽️ {recipe.cuisine}</p>
         )}
         
-        <Button className="w-full" size="sm">
-          View Recipe
-        </Button>
+        <Link href={`/recipes/${recipe.spoonacularId || recipe.id.replace('spoon_', '')}`}>
+          <Button className="w-full" size="sm">
+            View Recipe
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );
