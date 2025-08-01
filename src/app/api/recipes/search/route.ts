@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // If searching Spoonacular, delegate to Spoonacular service
     if (params.source === 'spoonacular') {
-      return await searchSpoonacularRecipes(params, tagFilters);
+      return await searchSpoonacularRecipes(params, tagFilters, currentUser);
     }
 
     // Build database query
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
 
     // If no specific source, default to Spoonacular for now
     if (params.source === 'all') {
-      return await searchSpoonacularRecipes(params, tagFilters);
+      return await searchSpoonacularRecipes(params, tagFilters, currentUser);
     }
 
     // Execute query
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
 // Spoonacular Search Helper
 // ============================================================================
 
-async function searchSpoonacularRecipes(params: any, tagFilters: string[]) {
+async function searchSpoonacularRecipes(params: any, tagFilters: string[], currentUser?: any) {
   try {
     const spoonacularService = getSpoonacularService();
     
@@ -206,6 +206,17 @@ async function searchSpoonacularRecipes(params: any, tagFilters: string[]) {
     };
 
     const response = await spoonacularService.searchRecipes(spoonacularParams);
+
+    // Get user's favorites if authenticated
+    let userFavorites: Set<string> = new Set();
+    if (currentUser) {
+      const favorites = await db
+        .select({ recipeId: recipeFavorites.recipeId })
+        .from(recipeFavorites)
+        .where(eq(recipeFavorites.userId, currentUser.id));
+      
+      userFavorites = new Set(favorites.map(f => f.recipeId));
+    }
 
     // Transform Spoonacular results to our format
     const transformedRecipes = response.results.map(recipe => ({
@@ -234,7 +245,7 @@ async function searchSpoonacularRecipes(params: any, tagFilters: string[]) {
       createdAt: new Date().toISOString(),
       userId: null,
       familyGroupId: null,
-      isFavorited: false, // TODO: Check if user has favorited this recipe
+      isFavorited: userFavorites.has(recipe.id.toString()),
     }));
 
     return NextResponse.json({

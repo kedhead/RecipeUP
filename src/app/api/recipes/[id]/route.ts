@@ -272,7 +272,7 @@ async function getSpoonacularRecipe(id: string, currentUser: any) {
       },
       recentReviews: [],
       // User interaction flags
-      isFavorited: false,
+      isFavorited: currentUser ? await checkIsFavorited(spoonacularId.toString(), currentUser.id) : false,
       userRating: null,
     };
 
@@ -308,6 +308,26 @@ async function getSpoonacularRecipe(id: string, currentUser: any) {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+async function checkIsFavorited(recipeId: string, userId: string): Promise<boolean> {
+  try {
+    const [favorite] = await db
+      .select({ id: recipeFavorites.id })
+      .from(recipeFavorites)
+      .where(
+        and(
+          eq(recipeFavorites.recipeId, recipeId),
+          eq(recipeFavorites.userId, userId)
+        )
+      )
+      .limit(1);
+    
+    return !!favorite;
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    return false;
+  }
+}
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').trim();

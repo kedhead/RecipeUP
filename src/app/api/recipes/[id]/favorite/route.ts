@@ -43,7 +43,7 @@ export async function POST(
     const { notes, rating } = validationResult.data;
 
     // For Spoonacular recipes, we still allow favoriting (they're stored as favorites without being in our recipes table)
-    const isSpoonacularRecipe = recipeId.startsWith('spoon_');
+    const isSpoonacularRecipe = /^\d+$/.test(recipeId);
     
     if (!isSpoonacularRecipe) {
       // Check if recipe exists for user recipes

@@ -172,17 +172,20 @@ export function RecipesPageClient({ user }: { user: any }) {
       // For Spoonacular recipes, extract the numeric ID
       const numericId = recipeId.startsWith('spoon_') ? recipeId.replace('spoon_', '') : recipeId;
       
-      const response = await fetch(`/api/recipes/${numericId}/favorite`, {
+      const response = await fetch(`/api/recipes/${numericId}/favorite/toggle`, {
         method: 'POST',
       });
       
       if (response.ok) {
-        // Update the recipe in state
+        const data = await response.json();
+        // Update the recipe in state with the actual favorite status from server
         setRecipes(prev => prev.map(recipe => 
           recipe.id === recipeId 
-            ? { ...recipe, isFavorited: !recipe.isFavorited }
+            ? { ...recipe, isFavorited: data.isFavorited }
             : recipe
         ));
+      } else {
+        console.error('Failed to toggle favorite:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);

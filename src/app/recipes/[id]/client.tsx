@@ -101,12 +101,15 @@ export function RecipeDetailClient({ user, recipeId }: { user: any; recipeId: st
 
   const handleFavorite = async () => {
     try {
-      const response = await fetch(`/api/recipes/${recipeId}/favorite`, {
+      const response = await fetch(`/api/recipes/${recipeId}/favorite/toggle`, {
         method: 'POST',
       });
       
       if (response.ok) {
-        setIsFavorited(!isFavorited);
+        const data = await response.json();
+        setIsFavorited(data.isFavorited);
+      } else {
+        console.error('Failed to toggle favorite:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
