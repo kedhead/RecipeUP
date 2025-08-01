@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { db } from '../../../../lib/db';
 import { recipes, recipeFavorites, recipeReviews, users } from '../../../../lib/db/schema';
-import { verifyBearerToken } from '../../../../lib/auth';
+import { verifyBearerToken, requireAuth } from '../../../../lib/auth';
 import { getSpoonacularService } from '../../../../lib/spoonacular';
 import { eq, and, sql, avg, count } from 'drizzle-orm';
 
@@ -442,4 +443,191 @@ function transformNutrition(nutrition?: any) {
   });
 
   return result;
+}
+
+// ============================================================================
+// Validation Schemas for Updates
+// ============================================================================
+
+const ingredientSchema = z.object({
+  name: z.string().min(1, 'Ingredient name is required'),
+  amount: z.string().min(1, 'Amount is required'),
+  unit: z.string(),
+  notes: z.string().optional(),
+  category: z.string().optional(),
+});
+
+const instructionSchema = z.object({
+  step: z.number().positive(),
+  instruction: z.string().min(1, 'Instruction is required'),
+  time: z.number().positive().optional(),
+  temperature: z.object({
+    value: z.number(),
+    unit: z.enum(['F', 'C']),
+  }).optional(),
+});
+
+const updateRecipeSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(255, 'Title is too long').optional(),
+  description: z.string().optional(),
+  summary: z.string().optional(),
+  
+  // Timing
+  prepTimeMinutes: z.number().positive().optional(),
+  cookTimeMinutes: z.number().positive().optional(),
+  servings: z.number().positive().optional(),
+  
+  // Media
+  imageUrl: z.string().url().optional().nullable(),
+  
+  // Categorization
+  difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']).optional(),
+  cuisine: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional(),
+  dishTypes: z.array(z.string()).optional(),
+  diets: z.array(z.string()).optional(),
+  
+  // Recipe content
+  ingredients: z.array(ingredientSchema).optional(),
+  instructions: z.array(instructionSchema).optional(),
+  
+  // Dietary flags
+  isVegetarian: z.boolean().optional(),
+  isVegan: z.boolean().optional(),
+  isGlutenFree: z.boolean().optional(),
+  isDairyFree: z.boolean().optional(),
+  
+  // Visibility and status
+  visibility: z.enum(['public', 'family', 'private']).optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+});
+
+// ============================================================================
+// PUT /api/recipes/[id] - Update recipe
+// ============================================================================
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const currentUser = await requireAuth();
+    const { id } = params;
+    
+    // Only allow editing user-created recipes (not Spoonacular recipes)
+    if (/^\d+$/.test(id)) {
+      return NextResponse.json(
+        { error: 'Cannot edit external recipes' },
+        { status: 403 }
+      );
+    }
+    
+    const body = await request.json();
+
+    // Validate request body
+    const validationResult = updateRecipeSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const data = validationResult.data;
+
+    // Check if recipe exists and user owns it
+    const existingRecipe = await db
+      .select()
+      .from(recipes)
+      .where(and(
+        eq(recipes.id, id),
+        eq(recipes.userId, currentUser.id)
+      ))
+      .limit(1);
+
+    if (existingRecipe.length === 0) {
+      return NextResponse.json(
+        { error: 'Recipe not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Calculate ready time if timing fields are provided
+    const readyInMinutes = (data.prepTimeMinutes && data.cookTimeMinutes) 
+      ? data.prepTimeMinutes + data.cookTimeMinutes 
+      : data.cookTimeMinutes || data.prepTimeMinutes || existingRecipe[0].readyInMinutes;
+
+    // Update recipe
+    const [updatedRecipe] = await db
+      .update(recipes)
+      .set({
+        ...data,
+        readyInMinutes,
+        updatedAt: new Date(),
+      })
+      .where(eq(recipes.id, id))
+      .returning();
+
+    return NextResponse.json({
+      message: 'Recipe updated successfully',
+      recipe: updatedRecipe,
+    });
+  } catch (error) {
+    console.error('Update recipe error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================================
+// DELETE /api/recipes/[id] - Delete recipe
+// ============================================================================
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const currentUser = await requireAuth();
+    const { id } = params;
+
+    // Only allow deleting user-created recipes (not Spoonacular recipes)
+    if (/^\d+$/.test(id)) {
+      return NextResponse.json(
+        { error: 'Cannot delete external recipes' },
+        { status: 403 }
+      );
+    }
+
+    // Check if recipe exists and user owns it
+    const existingRecipe = await db
+      .select()
+      .from(recipes)
+      .where(and(
+        eq(recipes.id, id),
+        eq(recipes.userId, currentUser.id)
+      ))
+      .limit(1);
+
+    if (existingRecipe.length === 0) {
+      return NextResponse.json(
+        { error: 'Recipe not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Delete recipe
+    await db
+      .delete(recipes)
+      .where(eq(recipes.id, id));
+
+    return NextResponse.json({
+      message: 'Recipe deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete recipe error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }

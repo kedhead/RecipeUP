@@ -41,7 +41,7 @@ interface SearchResponse {
   source?: string;
 }
 
-function RecipeCard({ recipe, onFavorite }: { recipe: Recipe; onFavorite: (id: string) => void }) {
+function RecipeCard({ recipe, onFavorite, currentUserId }: { recipe: Recipe; onFavorite: (id: string) => void; currentUserId?: string }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFavorite = async () => {
@@ -110,11 +110,22 @@ function RecipeCard({ recipe, onFavorite }: { recipe: Recipe; onFavorite: (id: s
           <p className="text-xs text-gray-500 mb-2">🍽️ {recipe.cuisine}</p>
         )}
         
-        <Link href={`/recipes/${recipe.spoonacularId || (recipe.id.startsWith('spoon_') ? recipe.id.replace('spoon_', '') : recipe.id)}`}>
-          <Button className="w-full" size="sm">
-            View Recipe
-          </Button>
-        </Link>
+        <div className="space-y-2">
+          <Link href={`/recipes/${recipe.spoonacularId || (recipe.id.startsWith('spoon_') ? recipe.id.replace('spoon_', '') : recipe.id)}`}>
+            <Button className="w-full" size="sm">
+              View Recipe
+            </Button>
+          </Link>
+          
+          {/* Show edit button for user-owned recipes */}
+          {recipe.sourceType === 'user' && currentUserId && !recipe.spoonacularId && (
+            <Link href={`/recipes/${recipe.id}/edit`}>
+              <Button variant="outline" className="w-full" size="sm">
+                ✏️ Edit Recipe
+              </Button>
+            </Link>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -137,7 +148,7 @@ export function RecipesPageClient({ user }: { user: any }) {
       let url = '';
       
       if (activeTab === 'user') {
-        url = '/api/recipes?status=published&limit=12';
+        url = '/api/recipes/my-collection?limit=12';
       } else if (activeTab === 'all') {
         url = '/api/recipes/search?source=all&limit=12&query=healthy';
       } else {
@@ -151,12 +162,8 @@ export function RecipesPageClient({ user }: { user: any }) {
       if (response.ok) {
         const data = await response.json();
         if (activeTab === 'user') {
-          // Transform user recipes to match the expected format
-          setRecipes(data.recipes.map((recipe: any) => ({
-            ...recipe,
-            spoonacularId: null,
-            isFavorited: false, // Could be enhanced to check favorites
-          })));
+          // Recipes from my-collection endpoint are already properly formatted
+          setRecipes(data.recipes);
         } else {
           setRecipes(data.recipes);
         }
@@ -181,8 +188,8 @@ export function RecipesPageClient({ user }: { user: any }) {
       
       let url = '';
       if (activeTab === 'user') {
-        // For user recipes, we'll use a simple search on the user's recipes
-        url = `/api/recipes?status=published&limit=12`;
+        // For user collection, we'll still use the collection endpoint and filter client-side
+        url = `/api/recipes/my-collection?limit=50`; // Get more results to allow filtering
       } else {
         const source = activeTab === 'all' ? 'all' : 'spoonacular';
         url = `/api/recipes/search?source=${source}&limit=12&query=${encodeURIComponent(query)}`;
@@ -195,15 +202,14 @@ export function RecipesPageClient({ user }: { user: any }) {
       if (response.ok) {
         const data = await response.json();
         if (activeTab === 'user') {
-          // Filter user recipes by title matching the query
+          // Filter user collection by title, description, or tags matching the query
           const filtered = data.recipes.filter((recipe: any) => 
-            recipe.title.toLowerCase().includes(query.toLowerCase())
+            recipe.title.toLowerCase().includes(query.toLowerCase()) ||
+            recipe.description?.toLowerCase().includes(query.toLowerCase()) ||
+            recipe.tags.some((tag: string) => tag.toLowerCase().includes(query.toLowerCase())) ||
+            recipe.cuisine?.toLowerCase().includes(query.toLowerCase())
           );
-          setRecipes(filtered.map((recipe: any) => ({
-            ...recipe,
-            spoonacularId: null,
-            isFavorited: false,
-          })));
+          setRecipes(filtered.slice(0, 12)); // Limit to 12 results
         } else {
           setRecipes(data.recipes);
         }
@@ -287,7 +293,7 @@ export function RecipesPageClient({ user }: { user: any }) {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              👨‍🍳 My Recipes
+              ❤️ My Collection
             </button>
             <button
               onClick={() => setActiveTab('all')}
@@ -342,6 +348,7 @@ export function RecipesPageClient({ user }: { user: any }) {
                 key={recipe.id}
                 recipe={recipe}
                 onFavorite={handleFavorite}
+                currentUserId={user.id}
               />
             ))}
           </div>
