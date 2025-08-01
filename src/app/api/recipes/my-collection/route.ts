@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     // Get user's own recipes
-    const userRecipes = await db
+    const rawUserRecipes = await db
       .select({
         id: recipes.id,
         title: recipes.title,
@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
         spoonacularId: recipes.spoonacularId,
         createdAt: recipes.createdAt,
         updatedAt: recipes.updatedAt,
-        isFavorited: sql<boolean>`true`.as('is_favorited'), // User's own recipes are always "favorited"
       })
       .from(recipes)
       .where(and(
@@ -50,6 +49,17 @@ export async function GET(request: NextRequest) {
         eq(recipes.status, 'published')
       ))
       .orderBy(desc(recipes.updatedAt));
+
+    // Transform user recipes to ensure required fields have default values
+    const userRecipes = rawUserRecipes.map(recipe => ({
+      ...recipe,
+      description: recipe.description || '',
+      summary: recipe.summary || recipe.description || '',
+      imageUrl: recipe.imageUrl || '',
+      readyInMinutes: recipe.readyInMinutes || 0,
+      healthScore: recipe.healthScore || 0,
+      isFavorited: true, // User's own recipes are always "favorited"
+    }));
 
     // Get user's favorited recipes (including Spoonacular ones)
     const favoritedRecipes = await db
@@ -80,7 +90,7 @@ export async function GET(request: NextRequest) {
     // Get local favorited recipes (other users' recipes)
     let localFavorites: any[] = [];
     if (localFavoriteIds.length > 0) {
-      localFavorites = await db
+      const rawLocalFavorites = await db
         .select({
           id: recipes.id,
           title: recipes.title,
@@ -105,11 +115,21 @@ export async function GET(request: NextRequest) {
           spoonacularId: recipes.spoonacularId,
           createdAt: recipes.createdAt,
           updatedAt: recipes.updatedAt,
-          isFavorited: sql<boolean>`true`.as('is_favorited'),
         })
         .from(recipes)
         .where(sql`${recipes.id} = ANY(${localFavoriteIds})`)
         .orderBy(desc(recipes.updatedAt));
+
+      // Transform local favorites to ensure required fields have default values
+      localFavorites = rawLocalFavorites.map(recipe => ({
+        ...recipe,
+        description: recipe.description || '',
+        summary: recipe.summary || recipe.description || '',
+        imageUrl: recipe.imageUrl || '',
+        readyInMinutes: recipe.readyInMinutes || 0,
+        healthScore: recipe.healthScore || 0,
+        isFavorited: true,
+      }));
     }
 
     // Get Spoonacular favorited recipes (limit to avoid API overuse)
