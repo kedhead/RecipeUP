@@ -207,7 +207,7 @@ export const recipes = pgTable('recipes', {
 export const recipeFavorites = pgTable('recipe_favorites', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
+  recipeId: text('recipe_id').notNull(), // Removed foreign key constraint to support external recipes
   familyGroupId: text('family_group_id').references(() => familyGroups.id, { onDelete: 'cascade' }),
   notes: text('notes'),
   rating: integer('rating'), // 1-5
