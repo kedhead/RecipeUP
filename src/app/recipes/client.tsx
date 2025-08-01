@@ -190,7 +190,12 @@ export function RecipesPageClient({ user }: { user: any }) {
             : recipe
         ));
       } else {
-        console.error('Failed to toggle favorite:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => null);
+        console.error('Failed to toggle favorite:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
