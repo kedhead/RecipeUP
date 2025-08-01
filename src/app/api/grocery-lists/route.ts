@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '../../../lib/db';
-import { groceryLists, familyGroups, familyGroupMembers, mealPlans, recipes, users } from '../../../lib/db/schema';
-import { requireAuth, verifyBearerToken } from '../../../lib/auth';
+import { db } from '../../../../lib/db';
+import { groceryLists, familyGroups, familyGroupMembers, mealPlans, recipes, users } from '../../../../lib/db/schema';
+import { requireAuth, verifyBearerToken } from '../../../../lib/auth';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 
 // ============================================================================

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '../../../lib/db';
-import { recipes, recipeFavorites } from '../../../lib/db/schema';
-import { verifyBearerToken } from '../../../lib/auth';
-import { getSpoonacularService } from '../../../lib/spoonacular';
+import { db } from '../../../../lib/db';
+import { recipes, recipeFavorites } from '../../../../lib/db/schema';
+import { verifyBearerToken } from '../../../../lib/auth';
+import { getSpoonacularService } from '../../../../lib/spoonacular';
 import { eq, and, or, like, desc, asc, sql, inArray } from 'drizzle-orm';
 
 // ============================================================================

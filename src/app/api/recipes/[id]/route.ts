@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../lib/db';
-import { recipes, recipeFavorites, recipeReviews, users } from '../../../lib/db/schema';
-import { verifyBearerToken } from '../../../lib/auth';
-import { getSpoonacularService } from '../../../lib/spoonacular';
+import { db } from '../../../../lib/db';
+import { recipes, recipeFavorites, recipeReviews, users } from '../../../../lib/db/schema';
+import { verifyBearerToken } from '../../../../lib/auth';
+import { getSpoonacularService } from '../../../../lib/spoonacular';
 import { eq, and, sql, avg, count } from 'drizzle-orm';
 
 // ============================================================================

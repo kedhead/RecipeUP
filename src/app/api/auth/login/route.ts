@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { login } from '../../../lib/auth';
+import { login } from '../../../../lib/auth';
 
 // ============================================================================
 // Validation Schema
