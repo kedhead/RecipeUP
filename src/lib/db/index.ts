@@ -2,24 +2,20 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-// Database connection configuration
-const connectionString = process.env.DATABASE_URL;
+// Database connection configuration - use Vercel's auto-generated vars
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required');
+  throw new Error('POSTGRES_URL or DATABASE_URL environment variable is required');
 }
 
-// Create postgres client with Supabase-friendly configuration
+// Create postgres client with Vercel + Supabase optimized configuration
 const client = postgres(connectionString, {
-  max: 1, // Reduce connections for serverless
+  max: 1,
   idle_timeout: 20,
-  connect_timeout: 30, // Increase timeout
-  // Supabase connection settings
-  ssl: 'require', // Always use SSL for Supabase
-  // Connection pooling for Vercel edge functions
+  connect_timeout: 30,
+  ssl: 'require',
   prepare: false,
-  // Additional Supabase-specific settings
-  transform: postgres.camel,
 });
 
 // Create Drizzle database instance
