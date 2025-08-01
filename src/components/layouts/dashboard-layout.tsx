@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar } from '@/components/navigation/navbar';
+import { Navbar } from '../navigation/navbar';
 
 interface User {
   id: string;

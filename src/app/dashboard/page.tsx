@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth';
-import { DashboardLayout } from '@/components/layouts/dashboard-layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../lib/auth';
+import { DashboardLayout } from '../../components/layouts/dashboard-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 
 async function getUser() {

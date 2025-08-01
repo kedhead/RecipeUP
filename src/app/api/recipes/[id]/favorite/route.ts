@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '@/lib/db';
-import { recipeFavorites, recipes } from '@/lib/db/schema';
-import { requireAuth } from '@/lib/auth';
+import { db } from '../../../lib/db';
+import { recipeFavorites, recipes } from '../../../lib/db/schema';
+import { requireAuth } from '../../../lib/auth';
 import { eq, and } from 'drizzle-orm';
 
 // ============================================================================

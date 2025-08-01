@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, healthCheck } from '@/lib/db';
+import { db, healthCheck } from '../../../lib/db';
 import { sql } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 import { join } from 'path';
