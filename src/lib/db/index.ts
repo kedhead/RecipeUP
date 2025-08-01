@@ -11,13 +11,15 @@ if (!connectionString) {
 
 // Create postgres client with Supabase-friendly configuration
 const client = postgres(connectionString, {
-  max: 10, // Maximum number of connections
+  max: 1, // Reduce connections for serverless
   idle_timeout: 20,
-  connect_timeout: 10,
+  connect_timeout: 30, // Increase timeout
   // Supabase connection settings
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  ssl: 'require', // Always use SSL for Supabase
   // Connection pooling for Vercel edge functions
   prepare: false,
+  // Additional Supabase-specific settings
+  transform: postgres.camel,
 });
 
 // Create Drizzle database instance
