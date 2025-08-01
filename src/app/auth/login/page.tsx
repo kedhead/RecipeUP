@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthLayout } from '@/components/layouts/auth-layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AuthLayout } from '../../../components/layouts/auth-layout';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
