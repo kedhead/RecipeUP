@@ -82,7 +82,9 @@ export function RecipeDetailClient({ user, recipeId }: { user: any; recipeId: st
       setError(null);
       
       // For Spoonacular recipes, we need to fetch from Spoonacular API
-      const response = await fetch(`/api/recipes/${recipeId}`);
+      const response = await fetch(`/api/recipes/${recipeId}`, {
+        credentials: 'include',
+      });
       
       if (!response.ok) {
         throw new Error('Failed to load recipe');
@@ -103,6 +105,7 @@ export function RecipeDetailClient({ user, recipeId }: { user: any; recipeId: st
     try {
       const response = await fetch(`/api/recipes/${recipeId}/favorite/toggle`, {
         method: 'POST',
+        credentials: 'include',
       });
       
       if (response.ok) {

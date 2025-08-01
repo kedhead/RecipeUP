@@ -133,7 +133,9 @@ export function RecipesPageClient({ user }: { user: any }) {
   const loadInitialRecipes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recipes/search?source=spoonacular&limit=12&query=healthy');
+      const response = await fetch('/api/recipes/search?source=spoonacular&limit=12&query=healthy', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data: SearchResponse = await response.json();
         setRecipes(data.recipes);
@@ -155,7 +157,9 @@ export function RecipesPageClient({ user }: { user: any }) {
     try {
       setLoading(true);
       setSearchActive(true);
-      const response = await fetch(`/api/recipes/search?source=spoonacular&limit=12&query=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/recipes/search?source=spoonacular&limit=12&query=${encodeURIComponent(query)}`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data: SearchResponse = await response.json();
         setRecipes(data.recipes);
@@ -174,6 +178,7 @@ export function RecipesPageClient({ user }: { user: any }) {
       
       const response = await fetch(`/api/recipes/${numericId}/favorite/toggle`, {
         method: 'POST',
+        credentials: 'include',
       });
       
       if (response.ok) {
