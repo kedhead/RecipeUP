@@ -138,18 +138,10 @@ export async function GET(request: NextRequest) {
 
     // TODO: More filters commented out for deployment
 
-    // TODO: Temporarily return empty results for deployment
-    // The entire query system needs to be rewritten to avoid chaining issues
-    return NextResponse.json({
-      recipes: [],
-      pagination: {
-        limit: params.limit,
-        offset: params.offset,
-        total: 0,
-        hasMore: false,
-      },
-      message: 'Search temporarily disabled during deployment - will be fixed soon'
-    });
+    // If no specific source, default to Spoonacular for now
+    if (params.source === 'all') {
+      return await searchSpoonacularRecipes(params, tagFilters);
+    }
 
     // Execute query
     const results = await query;
