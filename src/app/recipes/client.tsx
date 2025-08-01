@@ -110,7 +110,7 @@ function RecipeCard({ recipe, onFavorite }: { recipe: Recipe; onFavorite: (id: s
           <p className="text-xs text-gray-500 mb-2">🍽️ {recipe.cuisine}</p>
         )}
         
-        <Link href={`/recipes/${recipe.spoonacularId || recipe.id.replace('spoon_', '')}`}>
+        <Link href={`/recipes/${recipe.spoonacularId || (recipe.id.startsWith('spoon_') ? recipe.id.replace('spoon_', '') : recipe.id)}`}>
           <Button className="w-full" size="sm">
             View Recipe
           </Button>
@@ -125,20 +125,41 @@ export function RecipesPageClient({ user }: { user: any }) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchActive, setSearchActive] = useState(false);
+  const [activeTab, setActiveTab] = useState<'spoonacular' | 'user' | 'all'>('spoonacular');
 
   useEffect(() => {
     loadInitialRecipes();
-  }, []);
+  }, [activeTab]);
 
   const loadInitialRecipes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recipes/search?source=spoonacular&limit=12&query=healthy', {
+      let url = '';
+      
+      if (activeTab === 'user') {
+        url = '/api/recipes?status=published&limit=12';
+      } else if (activeTab === 'all') {
+        url = '/api/recipes/search?source=all&limit=12&query=healthy';
+      } else {
+        url = '/api/recipes/search?source=spoonacular&limit=12&query=healthy';
+      }
+      
+      const response = await fetch(url, {
         credentials: 'include',
       });
+      
       if (response.ok) {
-        const data: SearchResponse = await response.json();
-        setRecipes(data.recipes);
+        const data = await response.json();
+        if (activeTab === 'user') {
+          // Transform user recipes to match the expected format
+          setRecipes(data.recipes.map((recipe: any) => ({
+            ...recipe,
+            spoonacularId: null,
+            isFavorited: false, // Could be enhanced to check favorites
+          })));
+        } else {
+          setRecipes(data.recipes);
+        }
       }
     } catch (error) {
       console.error('Failed to load recipes:', error);
@@ -157,12 +178,35 @@ export function RecipesPageClient({ user }: { user: any }) {
     try {
       setLoading(true);
       setSearchActive(true);
-      const response = await fetch(`/api/recipes/search?source=spoonacular&limit=12&query=${encodeURIComponent(query)}`, {
+      
+      let url = '';
+      if (activeTab === 'user') {
+        // For user recipes, we'll use a simple search on the user's recipes
+        url = `/api/recipes?status=published&limit=12`;
+      } else {
+        const source = activeTab === 'all' ? 'all' : 'spoonacular';
+        url = `/api/recipes/search?source=${source}&limit=12&query=${encodeURIComponent(query)}`;
+      }
+      
+      const response = await fetch(url, {
         credentials: 'include',
       });
+      
       if (response.ok) {
-        const data: SearchResponse = await response.json();
-        setRecipes(data.recipes);
+        const data = await response.json();
+        if (activeTab === 'user') {
+          // Filter user recipes by title matching the query
+          const filtered = data.recipes.filter((recipe: any) => 
+            recipe.title.toLowerCase().includes(query.toLowerCase())
+          );
+          setRecipes(filtered.map((recipe: any) => ({
+            ...recipe,
+            spoonacularId: null,
+            isFavorited: false,
+          })));
+        } else {
+          setRecipes(data.recipes);
+        }
       }
     } catch (error) {
       console.error('Search failed:', error);
@@ -210,9 +254,52 @@ export function RecipesPageClient({ user }: { user: any }) {
   return (
     <DashboardLayout user={user}>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Recipes</h1>
-          <p className="text-gray-600 mt-2">Discover and manage your favorite recipes</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Recipes</h1>
+            <p className="text-gray-600 mt-2">Discover and manage your favorite recipes</p>
+          </div>
+          <Link href="/recipes/create">
+            <Button>
+              ➕ Create Recipe
+            </Button>
+          </Link>
+        </div>
+
+        {/* Recipe Source Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('spoonacular')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'spoonacular'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🌟 Discover Recipes
+            </button>
+            <button
+              onClick={() => setActiveTab('user')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'user'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              👨‍🍳 My Recipes
+            </button>
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🔍 All Recipes
+            </button>
+          </nav>
         </div>
 
         {/* Search Bar */}
