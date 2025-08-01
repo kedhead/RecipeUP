@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
+    console.log('My Collection: Fetching recipes for user:', currentUser.id);
+
     // Get user's own recipes
     const rawUserRecipes = await db
       .select({
@@ -49,6 +51,9 @@ export async function GET(request: NextRequest) {
         eq(recipes.status, 'published')
       ))
       .orderBy(desc(recipes.updatedAt));
+
+    console.log('My Collection: Found', rawUserRecipes.length, 'user recipes');
+    console.log('User recipes:', rawUserRecipes.map(r => ({ id: r.id, title: r.title, status: r.status, userId: r.userId })));
 
     // Transform user recipes to ensure required fields have default values
     const userRecipes = rawUserRecipes.map(recipe => ({
