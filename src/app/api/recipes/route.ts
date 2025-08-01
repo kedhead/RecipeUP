@@ -20,7 +20,7 @@ const ingredientSchema = z.object({
 const instructionSchema = z.object({
   step: z.number().positive(),
   instruction: z.string().min(1, 'Instruction is required'),
-  time: z.number().positive().optional(),
+  time: z.number().min(0).optional(),
   temperature: z.object({
     value: z.number(),
     unit: z.enum(['F', 'C']),
