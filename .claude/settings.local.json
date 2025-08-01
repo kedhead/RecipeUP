@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run setup:env:*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(docker:*)",
+      "Bash(pg_ctl:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx create-next-app:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(git init:*)"
+    ],
+    "deny": []
+  }
+}
