@@ -42,6 +42,7 @@ const createRecipeSchema = z.object({
   // Timing
   prepTimeMinutes: z.number().positive().optional(),
   cookTimeMinutes: z.number().positive().optional(),
+  readyInMinutes: z.number().positive().optional(),
   servings: z.number().positive().default(4),
   
   // Media
@@ -168,6 +169,8 @@ export async function POST(request: NextRequest) {
     // Validate request body
     const validationResult = createRecipeSchema.safeParse(body);
     if (!validationResult.success) {
+      console.error('Recipe validation failed:', validationResult.error.errors);
+      console.error('Request body:', JSON.stringify(body, null, 2));
       return NextResponse.json(
         {
           error: 'Validation failed',

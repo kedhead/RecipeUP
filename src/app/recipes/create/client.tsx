@@ -93,7 +93,9 @@ export function CreateRecipeClient({ user }: { user: any }) {
     setIsSubmitting(true);
     
     try {
-      const readyInMinutes = (parseInt(prepTimeMinutes) || 0) + (parseInt(cookTimeMinutes) || 0);
+      const prepTime = parseInt(prepTimeMinutes) || 0;
+      const cookTime = parseInt(cookTimeMinutes) || 0;
+      const readyInMinutes = prepTime + cookTime || null; // If both are 0, send null
       
       const recipeData = {
         title,
@@ -101,8 +103,8 @@ export function CreateRecipeClient({ user }: { user: any }) {
         summary: description, // Use description as summary for now
         imageUrl: imageUrl || null,
         servings,
-        prepTimeMinutes: parseInt(prepTimeMinutes) || null,
-        cookTimeMinutes: parseInt(cookTimeMinutes) || null,
+        prepTimeMinutes: prepTime || null,
+        cookTimeMinutes: cookTime || null,
         readyInMinutes,
         difficulty,
         cuisine: cuisine || null,
