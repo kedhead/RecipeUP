@@ -30,10 +30,16 @@ export { schema };
 // Database connection health check
 export async function healthCheck(): Promise<boolean> {
   try {
-    await client`SELECT 1`;
+    const result = await client`SELECT 1 as test`;
+    console.log('Database health check successful:', result);
     return true;
   } catch (error) {
-    console.error('Database health check failed:', error);
+    console.error('Database health check failed. Details:', {
+      error: error instanceof Error ? error.message : error,
+      connectionString: connectionString?.substring(0, 30) + '...',
+      hasConnectionString: !!connectionString,
+      nodeEnv: process.env.NODE_ENV
+    });
     return false;
   }
 }

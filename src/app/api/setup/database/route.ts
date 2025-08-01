@@ -106,13 +106,21 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Add debugging info
+    const debugInfo = {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      nodeEnv: process.env.NODE_ENV,
+      databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 30) + '...',
+    };
+
     // Check database connection
     const isHealthy = await healthCheck();
     if (!isHealthy) {
       return NextResponse.json(
         { 
           status: 'unhealthy',
-          message: 'Database connection failed' 
+          message: 'Database connection failed',
+          debug: debugInfo
         },
         { status: 500 }
       );
