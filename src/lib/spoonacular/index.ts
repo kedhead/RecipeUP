@@ -3,7 +3,7 @@
  * Clean, modern implementation with proper error handling and caching
  */
 
-import { Recipe, NewRecipe } from '@/lib/db/schema';
+import { Recipe, NewRecipe } from '../db/schema';
 
 // ============================================================================
 // Types
