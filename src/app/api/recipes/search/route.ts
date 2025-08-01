@@ -4,7 +4,7 @@ import { db } from '../../../../lib/db';
 import { recipes, recipeFavorites } from '../../../../lib/db/schema';
 import { verifyBearerToken, getCurrentUser } from '../../../../lib/auth';
 import { getSpoonacularService } from '../../../../lib/spoonacular';
-import { eq, and, or, like, desc, asc, sql, inArray } from 'drizzle-orm';
+import { eq, and, or, like, desc, asc, sql, inArray, ilike } from 'drizzle-orm';
 
 // ============================================================================
 // Validation Schema
@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // TODO: Fix query chaining issues - temporarily disabled for deployment
-    // query = query.where(or(...visibilityConditions));
+    // Apply visibility filters
+    query = query.where(or(...visibilityConditions));
 
     // TODO: Apply filters - temporarily disabled for deployment
     // All filter logic needs to be rewritten to avoid query chaining issues
@@ -139,21 +139,47 @@ export async function GET(request: NextRequest) {
     }
     */
 
-    // TODO: More filters commented out for deployment
-
-    // If no specific source, default to Spoonacular for now
-    if (params.source === 'all') {
-      return await searchSpoonacularRecipes(params, tagFilters, currentUser);
+    // Apply basic query filter if provided
+    if (params.query) {
+      query = query.where(
+        or(
+          ilike(recipes.title, `%${params.query}%`),
+          ilike(recipes.description, `%${params.query}%`),
+          ilike(recipes.cuisine, `%${params.query}%`)
+        )
+      );
     }
+
+    // Apply status filter - only show published recipes
+    query = query.where(eq(recipes.status, 'published'));
+
+    // Apply sorting and pagination
+    query = query
+      .orderBy(desc(recipes.updatedAt))
+      .limit(params.limit)
+      .offset(params.offset);
 
     // Execute query
     const results = await query;
 
-    // Get total count for pagination
-    const countQuery = db
+    // Get total count for pagination with same filters
+    let countQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(recipes)
-      .where(or(...visibilityConditions));
+      .where(and(
+        or(...visibilityConditions),
+        eq(recipes.status, 'published')
+      ));
+
+    if (params.query) {
+      countQuery = countQuery.where(
+        or(
+          ilike(recipes.title, `%${params.query}%`),
+          ilike(recipes.description, `%${params.query}%`),
+          ilike(recipes.cuisine, `%${params.query}%`)
+        )
+      );
+    }
 
     const [{ count: totalResults }] = await countQuery;
 
