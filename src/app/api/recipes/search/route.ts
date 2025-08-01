@@ -63,8 +63,58 @@ export async function GET(request: NextRequest) {
       return await searchSpoonacularRecipes(params, tagFilters, currentUser);
     }
 
-    // Build database query
-    let query = db
+    // Build all where conditions upfront
+    const whereConditions = [];
+
+    // Visibility conditions
+    const visibilityConditions = [eq(recipes.visibility, 'public')];
+    if (currentUser) {
+      // Add user's own recipes
+      visibilityConditions.push(eq(recipes.userId, currentUser.id));
+      
+      // Add family recipes if not including private
+      if (!params.includePrivate) {
+        visibilityConditions.push(eq(recipes.visibility, 'family'));
+      }
+    }
+    whereConditions.push(or(...visibilityConditions));
+
+    // Status filter - only show published recipes
+    whereConditions.push(eq(recipes.status, 'published'));
+
+    // TODO: Apply filters - temporarily disabled for deployment
+    // All filter logic needs to be rewritten to avoid query chaining issues
+    /*
+    if (params.cuisine) {
+      query = query.where(eq(recipes.cuisine, params.cuisine));
+    }
+
+    if (params.difficulty) {
+      query = query.where(eq(recipes.difficulty, params.difficulty));
+    }
+
+    if (params.maxCookTime) {
+      query = query.where(sql`${recipes.cookTimeMinutes} <= ${params.maxCookTime}`);
+    }
+
+    if (params.maxPrepTime) {
+      query = query.where(sql`${recipes.prepTimeMinutes} <= ${params.maxPrepTime}`);
+    }
+    */
+
+    // Query filter if provided
+    if (params.query) {
+      whereConditions.push(
+        or(
+          ilike(recipes.title, `%${params.query}%`),
+          ilike(recipes.description, `%${params.query}%`),
+          ilike(recipes.cuisine, `%${params.query}%`)
+        )
+      );
+    }
+
+    // Build and execute the query
+    const results = await db
       .select({
         id: recipes.id,
         title: recipes.title,
@@ -100,88 +150,17 @@ export async function GET(request: NextRequest) {
           )`.as('is_favorited')
         } : {}),
       })
-      .from(recipes);
-
-    // Apply visibility filters
-    const visibilityConditions = [eq(recipes.visibility, 'public')];
-    
-    if (currentUser) {
-      // Add user's own recipes
-      visibilityConditions.push(eq(recipes.userId, currentUser.id));
-      
-      // Add family recipes if not including private
-      if (!params.includePrivate) {
-        // TODO: Add family group access check when we implement family features
-        visibilityConditions.push(eq(recipes.visibility, 'family'));
-      }
-    }
-
-    // Apply visibility filters
-    query = query.where(or(...visibilityConditions));
-
-    // TODO: Apply filters - temporarily disabled for deployment
-    // All filter logic needs to be rewritten to avoid query chaining issues
-    /*
-    if (params.cuisine) {
-      query = query.where(eq(recipes.cuisine, params.cuisine));
-    }
-
-    if (params.difficulty) {
-      query = query.where(eq(recipes.difficulty, params.difficulty));
-    }
-
-    if (params.maxCookTime) {
-      query = query.where(sql`${recipes.cookTimeMinutes} <= ${params.maxCookTime}`);
-    }
-
-    if (params.maxPrepTime) {
-      query = query.where(sql`${recipes.prepTimeMinutes} <= ${params.maxPrepTime}`);
-    }
-    */
-
-    // Apply basic query filter if provided
-    if (params.query) {
-      query = query.where(
-        or(
-          ilike(recipes.title, `%${params.query}%`),
-          ilike(recipes.description, `%${params.query}%`),
-          ilike(recipes.cuisine, `%${params.query}%`)
-        )
-      );
-    }
-
-    // Apply status filter - only show published recipes
-    query = query.where(eq(recipes.status, 'published'));
-
-    // Apply sorting and pagination
-    query = query
+      .from(recipes)
+      .where(and(...whereConditions))
       .orderBy(desc(recipes.updatedAt))
       .limit(params.limit)
       .offset(params.offset);
 
-    // Execute query
-    const results = await query;
-
     // Get total count for pagination with same filters
-    let countQuery = db
+    const [{ count: totalResults }] = await db
       .select({ count: sql<number>`count(*)` })
       .from(recipes)
-      .where(and(
-        or(...visibilityConditions),
-        eq(recipes.status, 'published')
-      ));
-
-    if (params.query) {
-      countQuery = countQuery.where(
-        or(
-          ilike(recipes.title, `%${params.query}%`),
-          ilike(recipes.description, `%${params.query}%`),
-          ilike(recipes.cuisine, `%${params.query}%`)
-        )
-      );
-    }
-
-    const [{ count: totalResults }] = await countQuery;
+      .where(and(...whereConditions));
 
     return NextResponse.json({
       recipes: results,
