@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '../../../../lib/db';
 import { recipes, recipeFavorites } from '../../../../lib/db/schema';
-import { verifyBearerToken } from '../../../../lib/auth';
+import { verifyBearerToken, getCurrentUser } from '../../../../lib/auth';
 import { getSpoonacularService } from '../../../../lib/spoonacular';
 import { eq, and, or, like, desc, asc, sql, inArray } from 'drizzle-orm';
 
@@ -34,9 +34,13 @@ const searchParamsSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    console.log('Search request:', request.url);
+    console.log('Search params:', Object.fromEntries(searchParams));
+    
     const validationResult = searchParamsSchema.safeParse(Object.fromEntries(searchParams));
     
     if (!validationResult.success) {
+      console.error('Search validation failed:', validationResult.error.errors);
       return NextResponse.json(
         {
           error: 'Invalid search parameters',
@@ -49,8 +53,7 @@ export async function GET(request: NextRequest) {
     const params = validationResult.data;
     
     // Get current user (optional for search)
-    const authHeader = request.headers.get('authorization');
-    const currentUser = authHeader ? await verifyBearerToken(authHeader) : null;
+    const currentUser = await getCurrentUser().catch(() => null);
 
     // Parse tags if provided
     const tagFilters = params.tags ? params.tags.split(',').map(t => t.trim()) : [];
