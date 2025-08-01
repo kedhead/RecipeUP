@@ -20,8 +20,8 @@ export async function GET(
     const authHeader = request.headers.get('authorization');
     const currentUser = authHeader ? await verifyBearerToken(authHeader) : null;
 
-    // Check if this is a Spoonacular recipe
-    if (id.startsWith('spoon_')) {
+    // Check if this is a Spoonacular recipe (numeric ID means it's from Spoonacular)
+    if (/^\d+$/.test(id)) {
       return await getSpoonacularRecipe(id, currentUser);
     }
 
@@ -206,7 +206,7 @@ export async function GET(
 
 async function getSpoonacularRecipe(id: string, currentUser: any) {
   try {
-    const spoonacularId = parseInt(id.replace('spoon_', ''));
+    const spoonacularId = parseInt(id);
     const spoonacularService = getSpoonacularService();
     
     const spoonRecipe = await spoonacularService.getRecipeInformation(spoonacularId, true);
@@ -268,19 +268,38 @@ async function getSpoonacularRecipe(id: string, currentUser: any) {
       stats: {
         averageRating: null,
         reviewCount: 0,
-        favoriteCount: 0, // TODO: Count actual favorites for Spoonacular recipes
+        favoriteCount: 0,
       },
       recentReviews: [],
       // User interaction flags
-      isFavorited: false, // TODO: Check if user has favorited this Spoonacular recipe
+      isFavorited: false,
       userRating: null,
     };
+
+    console.log('Spoonacular recipe fetched:', recipe.title);
 
     return NextResponse.json({ recipe });
   } catch (error) {
     console.error('Spoonacular recipe fetch error:', error);
+    
+    // Check if it's a rate limit or API key issue
+    if (error instanceof Error) {
+      if (error.message.includes('Rate limit')) {
+        return NextResponse.json(
+          { error: 'Recipe service is temporarily unavailable due to rate limits' },
+          { status: 429 }
+        );
+      }
+      if (error.message.includes('API request failed')) {
+        return NextResponse.json(
+          { error: 'Recipe not found or service unavailable' },
+          { status: 404 }
+        );
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch recipe from external source' },
+      { error: 'Failed to fetch recipe from external source', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
