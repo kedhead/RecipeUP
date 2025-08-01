@@ -34,7 +34,7 @@ export default async function FamilyPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                You're not part of any family group yet. Create or join a family group to start sharing recipes!
+                You&apos;re not part of any family group yet. Create or join a family group to start sharing recipes!
               </p>
             </CardContent>
           </Card>
@@ -58,7 +58,7 @@ export default async function FamilyPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Have an invite code? Join your family's group and start collaborating!
+                Have an invite code? Join your family&apos;s group and start collaborating!
               </p>
             </CardContent>
           </Card>

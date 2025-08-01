@@ -30,7 +30,7 @@ export default async function GroceryListsPage() {
           <Card>
             <CardHeader>
               <CardTitle>🛒 Current List</CardTitle>
-              <CardDescription>This week's shopping list</CardDescription>
+              <CardDescription>This week&apos;s shopping list</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
