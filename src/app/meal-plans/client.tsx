@@ -64,6 +64,13 @@ export function MealPlansClient({ user }: { user: any }) {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+  const [createFormData, setCreateFormData] = useState({
+    familyGroupId: '',
+    name: '',
+    weekStartDate: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+    notes: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -150,6 +157,65 @@ export function MealPlansClient({ user }: { user: any }) {
     return mealType.charAt(0).toUpperCase() + mealType.slice(1);
   };
 
+  const handleCreateMealPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createFormData.familyGroupId || !createFormData.name.trim()) return;
+
+    try {
+      setSubmitting(true);
+      
+      // Calculate week end date
+      const startDate = new Date(createFormData.weekStartDate);
+      const endDate = addDays(startDate, 6);
+      
+      const response = await fetch('/api/meal-plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          familyGroupId: createFormData.familyGroupId,
+          name: createFormData.name.trim(),
+          weekStartDate: createFormData.weekStartDate,
+          notes: createFormData.notes.trim() || undefined,
+          meals: {}, // Start with empty meals
+        }),
+      });
+
+      if (response.ok) {
+        await loadData(); // Reload all data
+        setShowCreateForm(false);
+        setCreateFormData({
+          familyGroupId: '',
+          name: '',
+          weekStartDate: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+          notes: '',
+        });
+      } else {
+        const error = await response.json();
+        alert(`Failed to create meal plan: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to create meal plan:', error);
+      alert('Failed to create meal plan. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreateThisWeek = () => {
+    if (familyGroups.length === 1) {
+      // Auto-select the only family group
+      setCreateFormData({
+        ...createFormData,
+        familyGroupId: familyGroups[0].id,
+        name: `Week of ${format(new Date(), 'MMM dd, yyyy')}`,
+      });
+    }
+    setShowCreateForm(true);
+  };
+
   if (loading) {
     return (
       <DashboardLayout user={user}>
@@ -175,6 +241,91 @@ export function MealPlansClient({ user }: { user: any }) {
             </Button>
           )}
         </div>
+
+        {/* Create Form */}
+        {showCreateForm && (
+          <Card className="border-brand-200">
+            <CardHeader>
+              <CardTitle>📅 Create Meal Plan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateMealPlan} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Family Group *
+                  </label>
+                  <select
+                    value={createFormData.familyGroupId}
+                    onChange={(e) => setCreateFormData({ ...createFormData, familyGroupId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select a family group</option>
+                    {familyGroups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Plan Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormData.name}
+                    onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    placeholder="e.g., Week of Jan 15, 2024"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Week Starting Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={createFormData.weekStartDate}
+                    onChange={(e) => setCreateFormData({ ...createFormData, weekStartDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes (optional)
+                  </label>
+                  <textarea
+                    value={createFormData.notes}
+                    onChange={(e) => setCreateFormData({ ...createFormData, notes: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    placeholder="Any notes about this meal plan..."
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? 'Creating...' : 'Create Meal Plan'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowCreateForm(false)}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Family Groups Check */}
         {familyGroups.length === 0 && (
@@ -276,7 +427,7 @@ export function MealPlansClient({ user }: { user: any }) {
                     <div className="text-gray-600 mb-4">
                       No meal plan for this week yet.
                     </div>
-                    <Button onClick={() => setShowCreateForm(true)}>
+                    <Button onClick={handleCreateThisWeek}>
                       📅 Create This Week&apos;s Plan
                     </Button>
                   </div>
