@@ -49,10 +49,7 @@ export async function GET(request: NextRequest) {
         updatedAt: recipes.updatedAt,
       })
       .from(recipes)
-      .where(and(
-        eq(recipes.userId, currentUser.id),
-        eq(recipes.status, 'published')
-      ))
+      .where(eq(recipes.userId, currentUser.id))
       .orderBy(desc(recipes.updatedAt));
 
     console.log('My Collection: Found', rawUserRecipes.length, 'user recipes');
