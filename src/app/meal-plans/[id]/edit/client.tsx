@@ -8,6 +8,16 @@ import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { format, addDays } from 'date-fns';
 
+interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  readyInMinutes: number;
+  servings: number;
+  sourceType: string;
+}
+
 interface Meal {
   recipeId?: string;
   recipeName?: string;
@@ -49,6 +59,8 @@ export function MealPlanEditClient({ user, mealPlanId }: { user: any; mealPlanId
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([]);
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
   
   // Form state
   const [name, setName] = useState('');
@@ -58,6 +70,7 @@ export function MealPlanEditClient({ user, mealPlanId }: { user: any; mealPlanId
 
   useEffect(() => {
     loadMealPlan();
+    loadAvailableRecipes();
   }, [mealPlanId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadMealPlan = async () => {
@@ -97,6 +110,25 @@ export function MealPlanEditClient({ user, mealPlanId }: { user: any; mealPlanId
     }
   };
 
+  const loadAvailableRecipes = async () => {
+    try {
+      setLoadingRecipes(true);
+      // Load user's recipes and favorites from their collection
+      const response = await fetch('/api/recipes/my-collection?limit=100', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableRecipes(data.recipes);
+      }
+    } catch (error) {
+      console.error('Failed to load available recipes:', error);
+    } finally {
+      setLoadingRecipes(false);
+    }
+  };
+
   const updateMeal = (day: string, mealType: string, field: keyof Meal, value: string | number) => {
     setMeals(prev => ({
       ...prev,
@@ -105,6 +137,21 @@ export function MealPlanEditClient({ user, mealPlanId }: { user: any; mealPlanId
         [mealType]: {
           ...prev[day]?.[mealType],
           [field]: value || undefined,
+        }
+      }
+    }));
+  };
+
+  const selectRecipe = (day: string, mealType: string, recipe: Recipe) => {
+    setMeals(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [mealType]: {
+          recipeId: recipe.id,
+          recipeName: recipe.title,
+          servings: recipe.servings, // Use recipe's default servings
+          notes: prev[day]?.[mealType]?.notes || '', // Keep existing notes
         }
       }
     }));
@@ -331,13 +378,56 @@ export function MealPlanEditClient({ user, mealPlanId }: { user: any; mealPlanId
                           </div>
                           
                           <div className="space-y-2">
-                            <input
-                              type="text"
-                              value={meal.recipeName || ''}
-                              onChange={(e) => updateMeal(day, mealType, 'recipeName', e.target.value)}
-                              placeholder="Recipe or meal name"
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 focus:border-transparent"
-                            />
+                            {/* Recipe Selection */}
+                            <div>
+                              <select
+                                value={meal.recipeId || ''}
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    const recipe = availableRecipes.find(r => r.id === e.target.value);
+                                    if (recipe) {
+                                      selectRecipe(day, mealType, recipe);
+                                    }
+                                  } else {
+                                    updateMeal(day, mealType, 'recipeId', '');
+                                    updateMeal(day, mealType, 'recipeName', '');
+                                  }
+                                }}
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 focus:border-transparent"
+                              >
+                                <option value="">Select a recipe...</option>
+                                {availableRecipes.map((recipe) => (
+                                  <option key={recipe.id} value={recipe.id}>
+                                    {recipe.title} ({recipe.readyInMinutes}min)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Or manual recipe name input */}
+                            {!meal.recipeId && (
+                              <input
+                                type="text"
+                                value={meal.recipeName || ''}
+                                onChange={(e) => updateMeal(day, mealType, 'recipeName', e.target.value)}
+                                placeholder="Or enter recipe name manually..."
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 focus:border-transparent"
+                              />
+                            )}
+
+                            {/* Recipe info display */}
+                            {meal.recipeId && meal.recipeName && (
+                              <div className="bg-brand-50 border border-brand-200 rounded p-2">
+                                <div className="text-xs font-medium text-brand-800">
+                                  📖 {meal.recipeName}
+                                </div>
+                                <Link href={`/recipes/${meal.recipeId}`} target="_blank">
+                                  <Button variant="outline" size="sm" className="mt-1 text-xs h-5">
+                                    View Recipe
+                                  </Button>
+                                </Link>
+                              </div>
+                            )}
                             
                             <input
                               type="number"

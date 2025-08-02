@@ -246,9 +246,9 @@ export function MealPlanDetailClient({ user, mealPlanId }: { user: any; mealPlan
                                 </div>
                               )}
                               {meal.recipeId && (
-                                <Link href={`/recipes/${meal.recipeId}`}>
+                                <Link href={`/recipes/${meal.recipeId}`} target="_blank">
                                   <Button variant="outline" size="sm" className="mt-1 text-xs h-6">
-                                    View Recipe
+                                    📖 View Recipe
                                   </Button>
                                 </Link>
                               )}
