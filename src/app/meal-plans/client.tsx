@@ -67,7 +67,7 @@ export function MealPlansClient({ user }: { user: any }) {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     try {
@@ -201,7 +201,7 @@ export function MealPlansClient({ user }: { user: any }) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  📅 This Week's Meal Plan
+                  📅 This Week&apos;s Meal Plan
                   <span className="text-sm font-normal text-gray-500">
                     {format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'MMM dd')} - 
                     {format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'MMM dd, yyyy')}
@@ -277,7 +277,7 @@ export function MealPlansClient({ user }: { user: any }) {
                       No meal plan for this week yet.
                     </div>
                     <Button onClick={() => setShowCreateForm(true)}>
-                      📅 Create This Week's Plan
+                      📅 Create This Week&apos;s Plan
                     </Button>
                   </div>
                 )}
@@ -289,7 +289,7 @@ export function MealPlansClient({ user }: { user: any }) {
               <Card>
                 <CardHeader>
                   <CardTitle>📋 Recent Meal Plans</CardTitle>
-                  <CardDescription>Your family's meal planning history</CardDescription>
+                  <CardDescription>Your family&apos;s meal planning history</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
