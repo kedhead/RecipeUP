@@ -189,14 +189,6 @@ export async function POST(request: NextRequest) {
       ? data.prepTimeMinutes + data.cookTimeMinutes 
       : data.cookTimeMinutes || data.prepTimeMinutes || null;
 
-    console.log('Creating recipe with data:', {
-      title: data.title,
-      userId: currentUser.id,
-      status: data.status,
-      visibility: data.visibility,
-      sourceType: 'user'
-    });
-
     // Create recipe
     const [newRecipe] = await db
       .insert(recipes)
@@ -250,14 +242,6 @@ export async function POST(request: NextRequest) {
         status: data.status,
       })
       .returning();
-
-    console.log('Recipe created successfully:', {
-      id: newRecipe.id,
-      title: newRecipe.title,
-      userId: newRecipe.userId,
-      status: newRecipe.status,
-      visibility: newRecipe.visibility
-    });
 
     return NextResponse.json(
       {
