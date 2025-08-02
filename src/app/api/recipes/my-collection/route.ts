@@ -42,6 +42,9 @@ export async function GET(request: NextRequest) {
         isDairyFree: recipes.isDairyFree,
         sourceType: recipes.sourceType,
         spoonacularId: recipes.spoonacularId,
+        userId: recipes.userId,
+        status: recipes.status,
+        visibility: recipes.visibility,
         createdAt: recipes.createdAt,
         updatedAt: recipes.updatedAt,
       })
@@ -118,6 +121,9 @@ export async function GET(request: NextRequest) {
           isDairyFree: recipes.isDairyFree,
           sourceType: recipes.sourceType,
           spoonacularId: recipes.spoonacularId,
+          userId: recipes.userId,
+          status: recipes.status,
+          visibility: recipes.visibility,
           createdAt: recipes.createdAt,
           updatedAt: recipes.updatedAt,
         })
