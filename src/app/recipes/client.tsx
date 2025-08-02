@@ -279,7 +279,7 @@ export function RecipesPageClient({ user }: { user: any }) {
               onClick={() => setActiveTab('spoonacular')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'spoonacular'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-brand-500 text-brand-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -289,7 +289,7 @@ export function RecipesPageClient({ user }: { user: any }) {
               onClick={() => setActiveTab('user')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'user'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-brand-500 text-brand-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -299,7 +299,7 @@ export function RecipesPageClient({ user }: { user: any }) {
               onClick={() => setActiveTab('all')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'all'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-brand-500 text-brand-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -315,7 +315,7 @@ export function RecipesPageClient({ user }: { user: any }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search recipes (e.g., pasta, chicken, vegan)..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
           <Button type="submit" isLoading={loading}>
             Search
@@ -367,11 +367,11 @@ export function RecipesPageClient({ user }: { user: any }) {
         )}
 
         {/* Success Banner */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-green-900 mb-2">
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-brand-900 mb-2">
             🎉 Recipe Search Live!
           </h3>
-          <p className="text-green-800 text-sm">
+          <p className="text-brand-800 text-sm">
             Recipe search is now powered by Spoonacular API with {recipes.length} recipes loaded. Search for ingredients, cuisines, or diet types!
           </p>
         </div>

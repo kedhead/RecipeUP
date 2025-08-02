@@ -308,7 +308,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   placeholder="e.g., Grandma's Chocolate Chip Cookies"
                   required
                 />
@@ -322,7 +322,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   placeholder="Brief description of your recipe..."
                 />
               </div>
@@ -335,7 +335,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   placeholder="https://example.com/recipe-image.jpg"
                 />
               </div>
@@ -350,7 +350,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                     value={servings}
                     onChange={(e) => setServings(parseInt(e.target.value) || 1)}
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -364,7 +364,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                     value={prepTimeMinutes}
                     onChange={(e) => setPrepTimeMinutes(e.target.value)}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     placeholder="15"
                   />
                 </div>
@@ -378,7 +378,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                     value={cookTimeMinutes}
                     onChange={(e) => setCookTimeMinutes(e.target.value)}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     placeholder="30"
                   />
                 </div>
@@ -390,7 +390,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   >
                     <option value="EASY">Easy</option>
                     <option value="MEDIUM">Medium</option>
@@ -408,7 +408,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                     type="text"
                     value={cuisine}
                     onChange={(e) => setCuisine(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     placeholder="e.g., Italian, Mexican, Asian"
                   />
                 </div>
@@ -421,7 +421,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                     type="text"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     placeholder="dessert, chocolate, cookies"
                   />
                 </div>
@@ -488,7 +488,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                       type="text"
                       value={ingredient.name}
                       onChange={(e) => updateIngredient(index, 'name', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       placeholder="Ingredient name"
                     />
                   </div>
@@ -497,7 +497,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                       type="text"
                       value={ingredient.amount}
                       onChange={(e) => updateIngredient(index, 'amount', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       placeholder="Amount"
                     />
                   </div>
@@ -506,7 +506,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                       type="text"
                       value={ingredient.unit}
                       onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       placeholder="Unit"
                     />
                   </div>
@@ -515,7 +515,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                       type="text"
                       value={ingredient.notes}
                       onChange={(e) => updateIngredient(index, 'notes', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       placeholder="Notes (optional)"
                     />
                   </div>
@@ -547,7 +547,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
             <CardContent className="space-y-4">
               {instructions.map((instruction, index) => (
                 <div key={index} className="flex gap-4 items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-bold text-sm">
+                  <div className="flex-shrink-0 w-8 h-8 bg-brand-100 text-brand-800 rounded-full flex items-center justify-center font-bold text-sm">
                     {instruction.step}
                   </div>
                   <div className="flex-grow">
@@ -555,7 +555,7 @@ export function EditRecipeClient({ user, recipeId }: { user: any; recipeId: stri
                       value={instruction.instruction}
                       onChange={(e) => updateInstruction(index, 'instruction', e.target.value)}
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       placeholder={`Step ${instruction.step} instructions...`}
                     />
                   </div>

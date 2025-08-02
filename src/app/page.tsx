@@ -70,14 +70,14 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">
+          <div className="mt-8 p-6 bg-brand-50 rounded-lg border border-brand-200">
+            <h3 className="text-lg font-semibold text-brand-800 mb-2">
               📚 Deployment Instructions
             </h3>
-            <p className="text-blue-700 text-sm">
-              See <code className="bg-blue-100 px-2 py-1 rounded">DEPLOYMENT.md</code> for step-by-step setup instructions.
+            <p className="text-brand-700 text-sm">
+              See <code className="bg-brand-100 px-2 py-1 rounded">DEPLOYMENT.md</code> for step-by-step setup instructions.
               <br />
-              Or check <code className="bg-blue-100 px-2 py-1 rounded">/api/setup/database</code> endpoint for easy database initialization.
+              Or check <code className="bg-brand-100 px-2 py-1 rounded">/api/setup/database</code> endpoint for easy database initialization.
             </p>
           </div>
         </div>
