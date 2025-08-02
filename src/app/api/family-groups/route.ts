@@ -40,16 +40,8 @@ function generateInviteCode(): string {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get current user
-    const authHeader = request.headers.get('authorization');
-    const currentUser = authHeader ? await verifyBearerToken(authHeader) : null;
-    
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    // Get current user via cookie authentication
+    const currentUser = await requireAuth();
 
     // Get family groups the user belongs to with member counts
     const familyGroupsQuery = db
