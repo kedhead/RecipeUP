@@ -63,6 +63,11 @@ export async function GET(request: NextRequest) {
       return await searchSpoonacularRecipes(params, tagFilters, currentUser);
     }
 
+    // If searching all sources, combine local and Spoonacular results
+    if (params.source === 'all') {
+      return await searchAllSources(params, tagFilters, currentUser);
+    }
+
     // Build all where conditions upfront
     const whereConditions = [];
 
@@ -186,6 +191,131 @@ export async function GET(request: NextRequest) {
     console.error('Recipe search error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================================
+// Combined Search Helper (Local + Spoonacular)
+// ============================================================================
+
+async function searchAllSources(params: any, tagFilters: string[], currentUser?: any) {
+  try {
+    // Get a mix: some local recipes and some Spoonacular recipes
+    const localLimit = Math.min(6, params.limit); // Take up to 6 local recipes
+    const spoonacularLimit = params.limit - localLimit; // Rest from Spoonacular
+
+    // Search local recipes first
+    const whereConditions = [];
+    
+    // Visibility conditions for local recipes
+    const visibilityConditions = [eq(recipes.visibility, 'public')];
+    if (currentUser) {
+      visibilityConditions.push(eq(recipes.userId, currentUser.id));
+      visibilityConditions.push(eq(recipes.visibility, 'family'));
+    }
+    whereConditions.push(or(...visibilityConditions));
+    whereConditions.push(eq(recipes.status, 'published'));
+
+    // Query filter if provided
+    if (params.query) {
+      whereConditions.push(
+        or(
+          ilike(recipes.title, `%${params.query}%`),
+          ilike(recipes.description, `%${params.query}%`),
+          ilike(recipes.cuisine, `%${params.query}%`)
+        )
+      );
+    }
+
+    // Get local recipes
+    const localResults = await db
+      .select({
+        id: recipes.id,
+        title: recipes.title,
+        description: recipes.description,
+        summary: recipes.summary,
+        imageUrl: recipes.imageUrl,
+        cookTimeMinutes: recipes.cookTimeMinutes,
+        prepTimeMinutes: recipes.prepTimeMinutes,
+        readyInMinutes: recipes.readyInMinutes,
+        servings: recipes.servings,
+        difficulty: recipes.difficulty,
+        healthScore: recipes.healthScore,
+        cuisine: recipes.cuisine,
+        tags: recipes.tags,
+        dishTypes: recipes.dishTypes,
+        diets: recipes.diets,
+        isVegetarian: recipes.isVegetarian,
+        isVegan: recipes.isVegan,
+        isGlutenFree: recipes.isGlutenFree,
+        isDairyFree: recipes.isDairyFree,
+        sourceType: recipes.sourceType,
+        spoonacularId: recipes.spoonacularId,
+        visibility: recipes.visibility,
+        createdAt: recipes.createdAt,
+        userId: recipes.userId,
+        // Add favorite status if user is authenticated
+        ...(currentUser ? {
+          isFavorited: sql<boolean>`EXISTS(
+            SELECT 1 FROM ${recipeFavorites} 
+            WHERE ${recipeFavorites.recipeId} = ${recipes.id} 
+            AND ${recipeFavorites.userId} = ${currentUser.id}
+          )`.as('is_favorited')
+        } : {}),
+      })
+      .from(recipes)
+      .where(and(...whereConditions))
+      .orderBy(desc(recipes.updatedAt))
+      .limit(localLimit);
+
+    // Get Spoonacular recipes
+    let spoonacularResults = [];
+    if (spoonacularLimit > 0) {
+      const spoonacularParams = {
+        ...params,
+        limit: spoonacularLimit,
+        offset: 0, // Always get fresh Spoonacular results
+        query: params.query || 'popular', // Default to popular if no query
+      };
+      
+      const spoonacularResponse = await searchSpoonacularRecipes(spoonacularParams, tagFilters, currentUser);
+      const spoonacularData = await spoonacularResponse.json();
+      spoonacularResults = spoonacularData.recipes || [];
+    }
+
+    // Combine and shuffle results
+    const allResults = [...localResults, ...spoonacularResults];
+    
+    // Simple shuffle to mix local and external recipes
+    for (let i = allResults.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allResults[i], allResults[j]] = [allResults[j], allResults[i]];
+    }
+
+    return NextResponse.json({
+      recipes: allResults.slice(0, params.limit),
+      pagination: {
+        limit: params.limit,
+        offset: params.offset,
+        total: allResults.length,
+        hasMore: false, // Simplified pagination for mixed results
+      },
+      filters: {
+        query: params.query,
+        source: 'all',
+      },
+      source: 'mixed',
+      stats: {
+        localRecipes: localResults.length,
+        spoonacularRecipes: spoonacularResults.length,
+      }
+    });
+  } catch (error) {
+    console.error('Combined search error:', error);
+    return NextResponse.json(
+      { error: 'Failed to search recipes from all sources' },
       { status: 500 }
     );
   }

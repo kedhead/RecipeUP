@@ -15,7 +15,7 @@
 - **Recipe Creation**: Complete recipe creation form with validation and error handling
 - **Recipe Editing**: Full edit/delete functionality for user-created recipes with ownership validation
 - **My Collection**: Unified view showing user-created recipes + favorited recipes (both published and draft)
-- **Three-Tab Interface**: Discover Recipes (Spoonacular), My Collection (user + favorites), All Recipes (mixed search)
+- **Three-Tab Interface**: Discover Recipes (Spoonacular), My Collection (user + favorites), All Recipes (mixed local + external)
 
 ### ✅ **Authentication & User Management**
 - JWT authentication with HTTP-only cookies
@@ -72,7 +72,7 @@
 1. **Three-Tab Interface**:
    - 🌟 **Discover Recipes**: Spoonacular API results
    - ❤️ **My Collection**: User recipes + favorites combined
-   - 🔍 **All Recipes**: Mixed local + external search results
+   - 🌍 **All Recipes**: Mixed local + external search results
 
 2. **Recipe Operations**:
    - Search with real-time results
