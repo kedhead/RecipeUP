@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import { recipes, recipeFavorites } from '../../../../lib/db/schema';
 import { requireAuth } from '../../../../lib/auth';
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { eq, desc, and, or, sql } from 'drizzle-orm';
 import { getSpoonacularService } from '../../../../lib/spoonacular';
 
 // ============================================================================
