@@ -474,7 +474,12 @@ export function GroceryListsClient({ user }: { user: any }) {
                                   </div>
                                   {item.recipeSources && item.recipeSources.length > 0 && (
                                     <div className="text-xs text-gray-500">
-                                      From: {item.recipeSources.join(', ')}
+                                      📖 {item.recipeSources.length === 1 
+                                        ? item.recipeSources[0]
+                                        : item.recipeSources.length === 2
+                                        ? item.recipeSources.join(' & ')
+                                        : `${item.recipeSources[0]} & ${item.recipeSources.length - 1} other${item.recipeSources.length > 2 ? 's' : ''}`
+                                      }
                                     </div>
                                   )}
                                   {item.notes && (

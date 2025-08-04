@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
         // Get ingredients from recipes
         if (recipeIds.size > 0) {
           const recipeResults = await db
-            .select({ id: recipes.id, ingredients: recipes.ingredients })
+            .select({ id: recipes.id, title: recipes.title, ingredients: recipes.ingredients })
             .from(recipes)
             .where(inArray(recipes.id, Array.from(recipeIds)));
 
@@ -294,7 +294,9 @@ export async function POST(request: NextRequest) {
                     // Combine amounts if same ingredient
                     const existing = ingredientMap.get(key);
                     existing.recipeSources = existing.recipeSources || [];
-                    existing.recipeSources.push(recipe.id);
+                    if (!existing.recipeSources.includes(recipe.title)) {
+                      existing.recipeSources.push(recipe.title);
+                    }
                   } else {
                     ingredientMap.set(key, {
                       name: ingredient.name,
@@ -302,7 +304,7 @@ export async function POST(request: NextRequest) {
                       unit: ingredient.unit || '',
                       category: ingredient.category || categorizeIngredient(ingredient.name),
                       checked: false,
-                      recipeSources: [recipe.id],
+                      recipeSources: [recipe.title],
                       notes: ingredient.notes || '',
                     });
                   }
