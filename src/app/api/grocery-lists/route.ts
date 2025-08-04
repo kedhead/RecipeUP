@@ -69,16 +69,8 @@ function categorizeIngredient(name: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get current user
-    const authHeader = request.headers.get('authorization');
-    const currentUser = authHeader ? await verifyBearerToken(authHeader) : null;
-    
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    // Get current user via cookie authentication
+    const currentUser = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const familyGroupId = searchParams.get('family_group_id');
